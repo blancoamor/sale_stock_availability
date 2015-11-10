@@ -21,36 +21,18 @@
 
 from openerp.osv import fields, osv
 
+
 class sale_order_line_stock(osv.osv):
     _name = 'sale.order.line'
     _inherit = "sale.order.line"
 
-    def _fnct_line_stock(self, cr, uid, ids, field_name, args, context=None):
-
-        location_obj = self.pool.get('stock.location')
-        product_obj = self.pool.get('product.product')
-
-        if context is None:
-            context = {}
-        stock_available = 0
-        res = {}
-        quant_obj = self.pool.get('stock.quant')
-        for line in self.browse(cr, uid, ids, context=context):
-        # location_id = line.order_id.warehouse_id.lot_stock_id.id
-            product_id = line.product_id.id
-            quant_ids = quant_obj.search(cr,uid,[('product_id','=',product_id)])
-            inventory = 0
-            for quant in quant_obj.browse(cr,uid,quant_ids):
-                inventory += quant.qty
-                if inventory < 0:
-                       res[line.id] = 0 - line.product_uom_qty
-                else:
-                    res[line.id] = inventory - line.product_uom_qty
-        return res
-
     _columns = {
-        'virtual_available': fields.function(_fnct_line_stock, string='Saldo Stock'),
+        'virtual_available': fields.related('product_id', 'virtual_available',
+                                            string='Saldo Stock'),
     }
+
+    def view_availability(self, cr, uid, ids, context=None):
+        return {}
 
 sale_order_line_stock()
 

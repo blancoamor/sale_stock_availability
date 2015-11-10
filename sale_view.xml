@@ -7,18 +7,16 @@
 	    <field name="model">sale.order</field>
 	    <field name="inherit_id" ref="sale.view_order_form"/>
 	    <field name="arch" type="xml">
-	        <data>
-		<field name="price_unit" position="before">
-			<field name="virtual_available" />
-		</field> 
-        	    <xpath
-                	expr="/form/sheet/notebook/page[@string='Order Lines']/field[@name='order_line']/tree[@string='Sales Order Lines']/field[@name='price_unit']" position="before">
-        	       	 <field name="virtual_available"/>
-	            </xpath>
-        	    <!-- xpath
-                	expr="/form/notebook/page/field[@name='order_line']/tree/field[@name='price_unit']" position="before">
-        	       	 <field name="virtual_available"/>
-	            </xpath -->
+	    <data>
+                <xpath expr="//field[@name='order_line']" position="attributes">
+                    <attribute name="context">{'location':warehouse_id.location_id}</attribute>
+		</xpath>
+        	<xpath expr="//field[@name='order_line']/tree/field[@name='product_uom_qty']" position="after">
+		    <field name="virtual_available" readonly="True"/>
+	        </xpath>
+        	<xpath expr="//field[@name='order_line']/tree/field[@name='price_subtotal']" position="after">
+        	    <button name="view_availability" type="object" icon="gtk-find"/>
+	        </xpath>
 	        </data> 
 	    </field>
 	</record>

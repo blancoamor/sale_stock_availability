@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding    : utf-8 -*-
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
@@ -19,21 +19,23 @@
 #
 ##############################################################################
 
-{
-    'name': 'Sale Order Stock information on the product',
-    'version': '0.1',
-    'category': 'Tools',
-    'description': "",
-    'author': 'Moldeo Interactive',
-    'website': 'http://business.moldeo.coop/',
-    'images': [],
-    'depends': ['product','sale','stock'],
-    'demo': [],
-    'data': ['sale_view.xml'],
-    # 'data': ['product_view.xml'],
-    # 'data': [],
-    'test': [],
-    'installable': True,
-}
+from openerp.osv import fields, osv
+
+
+class stock_availability(osv.osv_memory):
+    _name = 'stock.availability'
+
+    def _get_virtual_available(self, cr, uid, ids, field_name, attrs,
+                               context=None):
+        return {}
+
+    _columns = {
+        'product_id': fields.one2many('product.template', 'Product'),
+        'location_id': fields.one2many('stock.location', 'Location'),
+        'virtual_available': fields.function(_get_virtual_available,
+                                             'Saldo Stock'),
+    }
+
+stock_availability()
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
