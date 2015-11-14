@@ -19,20 +19,32 @@
 #
 ##############################################################################
 
-from openerp.osv import fields, osv
+from openerp import models, api, fields
 
 
-class sale_order_line_stock(osv.osv):
-    _name = 'sale.order.line'
+class sale_order_line_stock(models.Model):
     _inherit = "sale.order.line"
 
-    _columns = {
-        'virtual_available': fields.related('product_id', 'virtual_available',
-                                            string='Saldo Stock'),
-    }
+    @api.depends('product_id', 'product_uom_qty', 'order_id.warehouse_id')
+    def _get_virtual_available(self):
+        for line in self:
+            product = line.product_id.with_context(
+                warehouse=line.order_id.warehouse_id.id
+            )
+            line.virtual_available = product.virtual_available -\
+                line.product_uom_qty
 
-    def view_availability(self, cr, uid, ids, context=None):
-        return {}
+    @api.multi
+    def view_availability(self):
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "stock.availability",
+            "views": [[False, "tree"]],
+            "domain": [["product_id", "=", self.product_id.id]]
+        }
+
+    virtual_available = fields.Float(compute="_get_virtual_available",
+                                     string="Saldo Stock")
 
 sale_order_line_stock()
 

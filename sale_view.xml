@@ -2,15 +2,12 @@
 <openerp>
     <data>
 
-	<record model="ir.ui.view" id="view_order_stock_form">
-	    <field name="name">sale.order.form.inherit</field>
+	<record model="ir.ui.view" id="view_order_stock_form_inherit">
+	    <field name="name">sale.order.stock.form.inherit</field>
 	    <field name="model">sale.order</field>
-	    <field name="inherit_id" ref="sale.view_order_form"/>
+	    <field name="inherit_id" ref="sale_stock.view_order_form_inherit"/>
 	    <field name="arch" type="xml">
 	    <data>
-                <xpath expr="//field[@name='order_line']" position="attributes">
-                    <attribute name="context">{'location':warehouse_id.location_id}</attribute>
-		</xpath>
         	<xpath expr="//field[@name='order_line']/tree/field[@name='product_uom_qty']" position="after">
 		    <field name="virtual_available" readonly="True"/>
 	        </xpath>
@@ -18,6 +15,19 @@
         	    <button name="view_availability" type="object" icon="gtk-find"/>
 	        </xpath>
 	        </data> 
+	    </field>
+	</record>
+
+	<record model="ir.ui.view" id="view_stock_availability_tree">
+	    <field name="name">stock.availability.tree</field>
+	    <field name="model">stock.availability</field>
+	    <field name="type">tree</field>
+	    <field name="arch" type="xml">
+		<tree>
+			<field name="product_id"/>
+			<field name="warehouse_id"/>
+			<field name="virtual_available"/>
+		</tree>
 	    </field>
 	</record>
 

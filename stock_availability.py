@@ -19,22 +19,59 @@
 #
 ##############################################################################
 
-from openerp.osv import fields, osv
+from openerp import models, api, fields
+import itertools as ii
+from math import ceil, log
 
 
-class stock_availability(osv.osv_memory):
+class stock_availability(models.TransientModel):
     _name = 'stock.availability'
 
-    def _get_virtual_available(self, cr, uid, ids, field_name, attrs,
-                               context=None):
-        return {}
+    def read(self, cr, uid, ids, fields, context=None):
+        product_pool = self.pool.get('product.product')
+        warehouse_pool = self.pool.get('stock.warehouse')
+        w_ids = warehouse_pool.search(cr, uid, [])
 
-    _columns = {
-        'product_id': fields.one2many('product.template', 'Product'),
-        'location_id': fields.one2many('stock.location', 'Location'),
-        'virtual_available': fields.function(_get_virtual_available,
-                                             'Saldo Stock'),
-    }
+        res = []
+        top = ceil(2**(log(len(w_ids) + 4, 2)))
+        for i in ids:
+            p_id, w_id = map(int, divmod(i, top))
+            product = product_pool.browse(cr, uid, p_id)
+            product = product.with_context(warehouse=w_id)
+            res.append({
+                'id': int(i),
+                'product_id': p_id,
+                'warehouse_id': w_id,
+                'virtual_available': product.virtual_available,
+            })
+        return res
+
+    def search(self, cr, uid, domain, context=None, offset=0,
+               limit=None, order=None, count=False):
+        product_pool = self.pool.get('product.product')
+        warehouse_pool = self.pool.get('stock.warehouse')
+        p_domain = [('id', c, r) for l, c, r in domain if l in ('product_id')]
+        p_ids = product_pool.search(cr, uid, p_domain, 0, None, order,
+                                    context=context)
+        w_domain = [('id', c, r) for rule in domain if l in ('warehouse_id')]
+        w_ids = warehouse_pool.search(cr, uid, w_domain, 0, None, order,
+                                      context=context)
+        top = ceil(2**(log(len(w_ids) + 4, 2)))
+        return [c[0]*top + c[1] for c in ii.product(p_ids, w_ids)]
+
+    @api.onchange('product_id', 'warehouse_id')
+    def _get_virtual_available(self):
+        for line in self:
+            product = line.product_id.with_context(
+                warehouse=line.warehouse_id.id
+            )
+            line.virtual_available = product.virtual_available -\
+                line.product_uom_qty
+
+    product_id = fields.Many2one('product.product', string='Product')
+    warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse')
+    virtual_available = fields.Float(compute="_get_virtual_available",
+                                     string='Saldo Stock')
 
 stock_availability()
 
