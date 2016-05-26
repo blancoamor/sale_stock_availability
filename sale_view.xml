@@ -8,15 +8,23 @@
 	    <field name="inherit_id" ref="sale_stock.view_order_form_inherit"/>
 	    <field name="arch" type="xml">
 	    <data>
+         <field name="warehouse_id" position="replace">
+             <field name="warehouse_id" on_change="stock_availability_onchange_sale_warehouse_id(warehouse_id,order_line)" options="{'no_create': True}" groups="stock.group_locations"/>
+         </field>
+
+
         	<xpath expr="//field[@name='order_line']/tree/field[@name='product_uom_qty']" position="after">
 		    <field name="virtual_available" readonly="True"/>
-	        </xpath>
-        	<xpath expr="//field[@name='order_line']/tree/field[@name='price_subtotal']" position="after">
-        	    <button name="view_availability" type="object" icon="gtk-find"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='price_subtotal']" position="after">
+                <button name="view_availability" type="object" icon="gtk-find"/>
 	        </xpath>
 	        </data> 
 	    </field>
 	</record>
+
+
+
 
 	<record model="ir.ui.view" id="view_stock_availability_tree">
 	    <field name="name">stock.availability.tree</field>

@@ -24,6 +24,11 @@ import itertools as ii
 from math import ceil, log
 
 
+
+import logging
+_logger = logging.getLogger(__name__)
+
+
 class stock_availability(models.TransientModel):
     _name = 'stock.availability'
 
@@ -38,12 +43,13 @@ class stock_availability(models.TransientModel):
             p_id, w_id = map(int, divmod(i, top))
             product = product_pool.browse(cr, uid, p_id)
             product = product.with_context(warehouse=w_id)
-            res.append({
-                'id': int(i),
-                'product_id': p_id,
-                'warehouse_id': w_id,
-                'virtual_available': product.virtual_available,
-            })
+            if product.virtual_available : 
+                res.append({
+                    'id': int(i),
+                    'product_id': p_id,
+                    'warehouse_id': w_id,
+                    'virtual_available': product.virtual_available,
+                })
         return res
 
     def search(self, cr, uid, domain, context=None, offset=0,
@@ -65,6 +71,7 @@ class stock_availability(models.TransientModel):
             product = line.product_id.with_context(
                 warehouse=line.warehouse_id.id
             )
+
             line.virtual_available = product.virtual_available -\
                 line.product_uom_qty
 
