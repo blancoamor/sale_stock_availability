@@ -27,7 +27,7 @@
     'author': 'Moldeo Interactive',
     'website': 'http://business.moldeo.coop/',
     'images': [],
-    'depends': ['product','sale'],
+    'depends': ['product','sale','stock'],
     'demo': [],
     'data': ['sale_view.xml'],
     # 'data': ['product_view.xml'],
